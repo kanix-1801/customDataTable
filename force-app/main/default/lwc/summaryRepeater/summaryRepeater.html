@@ -1,0 +1,102 @@
+<template>
+  <lightning-card title="Summary Builder">
+            <template for:each={rows} for:item="row" for:index="index">
+            <div key={row.id} class="slds-grid slds-gutters slds-m-around_x-small">
+    <div class="slds-col">
+      <lightning-combobox
+        name="SField"
+        label="Field"
+        data-index={index}
+        options={fieldsListWithDetail}
+        onchange={handleChange}
+        value={row.SField}
+        >
+      </lightning-combobox>
+    </div>
+    <div class="slds-col">
+      <lightning-combobox
+        name="operation"
+        label="Operation"
+        data-index={index}
+        options={summaryTypeOptions}
+        onchange={handleChange}
+        value={row.operation}
+      >
+      </lightning-combobox>
+    </div>
+    <div class="slds-col">
+                    <lightning-input
+                        name="Coulmn_Name"
+                        label="Column Name"
+                        data-index={index}
+                        value={row.Coulmn_Name}
+                        onchange={handleChange}>
+                    </lightning-input>
+                </div>
+     </div>
+        </template>
+    <!-- <lightning-combobox
+                        name="fField"
+                        label="Field 1"
+                        data-index={index}
+                        value={row.fField}
+                        options={picklistOptions}
+                        onchange={handleChange}>
+        </lightning-combobox> -->
+    <!-- <template for:each={rows} for:item="row" for:index="index">
+            <div key={row.id} class="slds-grid slds-gutters slds-m-around_x-small">
+                <div class="slds-col">
+                    <lightning-combobox
+                        name="fField"
+                        label="Field 1"
+                        data-index={index}
+                        value={row.fField}
+                        options={picklistOptions}
+                        onchange={handleChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="slds-col">
+                    <lightning-combobox
+                        name="operator"
+                        label="Operator"
+                        data-index={index}
+                        value={row.operator}
+                        options={operatorOptions}
+                        onchange={handleChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="slds-col">
+                    <lightning-combobox
+                        name="sField"
+                        label="Field 2"
+                        data-index={index}
+                        value={row.sField}
+                        options={picklistOptions}
+                        onchange={handleChange}>
+                    </lightning-combobox>
+                </div>
+
+                <div class="slds-col">
+                    <lightning-input
+                        name="Coulmn_Name"
+                        label="Column Name"
+                        data-index={index}
+                        value={row.Coulmn_Name}
+                        onchange={handleChange}>
+                    </lightning-input>
+                </div>
+            </div>
+        </template>
+
+        <div class="slds-m-around_medium">
+            <lightning-button label="Add Row" onclick={addRow}></lightning-button>
+            <lightning-button label="Remove Row" onclick={removeRow} class="slds-m-left_small"></lightning-button>
+        </div> -->
+        <div class="slds-m-around_medium">
+            <lightning-button label="Add Row" onclick={addRow}></lightning-button>
+            <lightning-button label="Remove Row" onclick={removeRow} class="slds-m-left_small"></lightning-button>
+        </div>
+  </lightning-card>
+</template>

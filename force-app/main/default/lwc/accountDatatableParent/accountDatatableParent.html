@@ -1,0 +1,17 @@
+<template>
+  <lightning-card  variant="Narrow"  title="from lwc" icon-name="standard:account">
+    <!-- <lightning-button-icon  icon-name="utility:down" variant="border-filled" alternative-text="Show More" slot="actions"></lightning-button-icon> -->
+    <c-datatable
+    table-data={tableData}
+    column-fields={columnFields2}
+    key-field={keyField}
+    pre-selected-rows={preSelectedRows}
+    is-required={isRequired}
+    column-labels={columnLabels}
+    onoutputselectedrows={handleSelectedRows}
+    onoutputeditedrows={handleEditedRows}
+    onoutputremovedrows={handleRemovedRows}
+  ></c-datatable>
+    <p slot="footer">Card Footer</p>
+  </lightning-card>
+</template>

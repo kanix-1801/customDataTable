@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <!-- <property name="picklistOptions" type="apex://usf3.FieldDescriptor[]" role="inputOnly"/> -->
+            <property name="fieldsListWithDetail" label="add ColFieldDescriptors" type="apex://usf3.FieldDescriptor[]" role="inputOnly"/>
+            <property name="fieldList" type="String" label="pass vFieldList"  />
+            <property name="objectName" type="String" label="pass vObject" />
+            <property name="summaryJson" type="String" label="Output Map (JSON)" role="outputOnly"/>
+            <property name="summaryMapJson" type="String[]" label="Summary Output Map (JSON)" role="outputOnly"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,26 @@
+<template>
+  <lightning-card icon-name="standard:account" variant="base">
+    <div slot="title">Opportunity Data Table</div>
+    <div slot="actions"></div>
+    <div slot="footer"></div>
+    <div>
+      <!-- Body -->
+      <div class="slds-m-around_medium">
+        <div>
+          <div>there i am going to cal l the data table</div>
+          <c-datatable
+          table-data={tableData}
+          column-fields={columnFields}
+          ></c-datatable>
+            <!-- onoutputselectedrows={handleSelectedRows}
+            onoutputeditedrows={handleEditedRows}
+            onoutputr emovedrows={handleRemovedRows} -->
+            <!-- key-field={keyField} -->
+            <!-- pre-selected-rows={preSelectedRows} -->
+            <!-- is-required={isRequired} -->
+               <!-- column-labels={columnLabels} -->
+        </div> 
+      </div>
+    </div>
+  </lightning-card>
+</template>
