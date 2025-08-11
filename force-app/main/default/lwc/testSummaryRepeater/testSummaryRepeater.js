@@ -5,10 +5,8 @@ export default class TestSummaryRepeater extends LightningElement {
 
   @api
   set records(value) {
-    // Make sure we have an array to collect results
     this.summaryCalculation = [];
 
-    // Helper: parse a single malformed string/object into a plain object
     const parseSummaryItem = (raw) => {
       if (!raw && raw !== 0) return null;
       // If it's already an object (or Proxy of object), return it
@@ -60,6 +58,8 @@ export default class TestSummaryRepeater extends LightningElement {
     };
 
     // Convert this.summaryCal to array of objects
+    console.log(' log : summaryCal' , this.summaryCal);
+    console.log(' log : summaryCal' , JSON.stringify(this.summaryCal));
     const summaryCalArr = Array.isArray(this.summaryCal) ? this.summaryCal : [];
     const summaryCalObjects = summaryCalArr
       .map(parseSummaryItem)
@@ -247,12 +247,12 @@ export default class TestSummaryRepeater extends LightningElement {
   //     console.log('SummaryRepeater : summaryCalculation' , this.summaryCalculation);
   //     console.log('SummaryRepeater : summaryCalculation' , JSON.stringify(this.summaryCalculation));
   //   }
-  
+
   get records() {
     return this._records;
   }
 
   @api summaryCal;
 
-  @track calculation;
+  // @track calculation;
 }

@@ -161,7 +161,8 @@ Features:   The only required paramters are the SObject collection of records an
                         </div>
         
                         <div if:false={isWorking} style={tableHeightAttribute} class={borderClass} id="datatableCard">
-        
+    
+                            <div>this is the 164</div>
                             <c-ers_custom-lightning-datatable
                                 aria-label={tableLabel}
                                 data={paginatedData}
@@ -263,6 +264,16 @@ Features:   The only required paramters are the SObject collection of records an
                     </div>
 
                     <div if:false={isWorking} style={tableHeightAttribute} class={borderClass} id="datatable">
+                        <div>this is the 267</div>
+                        <div class="summary-container">
+    <template for:each={summaryCalculation} for:item="item">
+        <div key={item.Id} class="summary-item">
+            <span class="summary-label">{item.Coulmn_Name}</span>
+            <span class="summary-value">{item.result}</span>
+        </div>
+    </template>
+</div>
+
                         <c-ers_custom-lightning-datatable
                             aria-label={tableLabel}
                             data={paginatedData}
