@@ -99,9 +99,12 @@ export default class ers_datatableCPE extends LightningElement {
     _wiz_columnCellAttribs;
     _wiz_columnTypeAttribs;
     _wiz_columnOtherAttribs;
+    _wiz_SummaryFieldsJson;
+
 
     vSelectionMethod;
     vFieldList = '';
+    vsummaryFieldsJson=''
     isEarlyExit = true;
     colFieldList = [];
     validateErrors = [];
@@ -370,6 +373,50 @@ export default class ers_datatableCPE extends LightningElement {
         }
     }
 
+//     @api
+//     get _wiz_summaryFieldsJson() { 
+//         return this._wiz_summaryFieldsJson;
+//     }
+    
+// }
+
+
+    @api
+    get wiz_SummaryFieldsJson() { 
+        return this._wiz_SummaryFieldsJson;
+    }
+    set wiz_SummaryFieldsJson(value) { 
+        const name = 'summaryFieldsJson';
+      try {
+        this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+    } catch (e) {
+        console.error('Failed to decode formula field:', e);
+        // this.dispatchValue = '';
+        // }
+    }
+    console.log('formula set is RUN  this._wiz_FormulaFields-->', this._wiz_SummaryFieldsJson)
+        //this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+        console.log('formula this.dispatchValues-->', this.dispatchValue)
+        this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
+        this.updateFlowParam(defaults.wizardAttributePrefix + name, value, '');
+}
+    // set wiz_FormulaFields(value) { 
+    //     const name = 'formulaFields';
+    //   try {
+    //     this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+    // } catch (e) {
+    //     console.error('Failed to decode formula field:', e);
+    //     this.dispatchValue = '';
+    // }
+
+    //     //this._wiz_FormulaFields = value;
+    //     console.log('formula set is RUN  this._wiz_FormulaFields-->', this._wiz_FormulaFields)
+    //     //this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+    //     console.log('formula this.dispatchValues-->', this.dispatchValue)
+    //     this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
+    //     this.updateFlowParam(defaults.wizardAttributePrefix + name, value, '');    
+    // }
+
     @api
     get wiz_columnAlignments() { 
         return this._wiz_columnAlignments;
@@ -526,6 +573,8 @@ export default class ers_datatableCPE extends LightningElement {
         columnFields: {value: null, valueDataType: null, isCollection: false, label: 'Column Fields', 
             helpText: "REQUIRED: Comma separated list of field API Names to display in the datatable.",
             isError: false, errorMessage: null},  
+        summaryFieldsJson: {value: null, valueDataType: null, isCollection: false, label: 'give summaryFieldsJson', 
+            helpText: 'give summaryFieldsJson to use in the Datatable'},
         columnAlignments: {value: null, valueDataType: null, isCollection: false, label: 'Column Alignments (Col#:alignment,...)', 
             helpText: "Comma separated list of ColID:Alignment Value (left,center,right)  \n" +   
             "NOTE: ColIDs can be either the column number or the field API Name"},
@@ -794,6 +843,7 @@ export default class ers_datatableCPE extends LightningElement {
                     helpText: 'https://ericsplayground.wordpress.com/how-to-use-an-apex-defined-object-with-my-datatable-flow-component/'},
                 {name: 'columnFields'},
                 {name: 'columnAlignments'},
+                {name: 'summaryFieldsJson'},
                 {name: 'columnEdits'},
                 {name: 'columnFilters'},
                 {name: 'columnIcons'},
@@ -889,6 +939,7 @@ export default class ers_datatableCPE extends LightningElement {
         }
     ]
 
+    summaryFieldsJsonT = [];
     // settings = { 
     //     attributeObjectName: 'objectName',
     //     attributeFieldName: 'fieldName',
@@ -906,6 +957,7 @@ export default class ers_datatableCPE extends LightningElement {
         {name: 'vSelectionMethod', type: 'String', value: ''},
         {name: 'vFieldList', type: 'String', value: ''},
         {name: 'colFieldList', type: 'String', value: []},
+        {name: 'wiz_SummaryFieldsJson', type: 'String', value: ''},
         {name: 'wiz_columnAlignments', type: 'String', value: ''},
         {name: 'wiz_columnEdits', type: 'String', value: ''},
         {name: 'wiz_columnFields', type: 'String', value: ''},
@@ -963,6 +1015,7 @@ export default class ers_datatableCPE extends LightningElement {
 
     set inputVariables(variables) {
         this._inputVariables = variables || [];
+        console.log('variables' , JSON.stringify(variables));
         this.initializeValues();
     }
 
@@ -986,6 +1039,9 @@ export default class ers_datatableCPE extends LightningElement {
                         this.selectedSObject = curInputParam.value;    
                     }
                     if (curInputParam.name == 'columnFields') { 
+                        console.log('get columnFields' , curInputParam);
+                        console.log('get columnFields' , curInputParam.name);
+                        console.log('get columnFields' , curInputParam.value);
                         this.vFieldList = curInputParam.value;
                         this.updateFlowParam('vFieldList', this.vFieldList, null, defaults.NOENCODE);
                         this.createFieldCollection(this.vFieldList);
@@ -993,6 +1049,19 @@ export default class ers_datatableCPE extends LightningElement {
                     if ((curInputParam.name == 'columnEdits') && curInputParam.value) {
                         this.isNoEdits = false;
                     }
+
+                    console.log('curInputParam    ' , curInputParam.name);
+                    if (curInputParam.name == 'summaryFieldsJson') { 
+                         console.log('curInputParam    ' , curInputParam.value);
+                         console.log('summaryFieldsJson : ' , JSON.stringify(curInputParam.value));
+                        this.summaryFieldsJson = curInputParam.value;    
+                    }
+
+                    if ((curInputParam.name == 'formulaFields')) {
+                      console.log('Formula curInputParam-->',curInputParam.value);
+                      this.formulaFields = curInputParam.Value;
+                    }
+                    
                     if ((curInputParam.name == 'columnFilters') && curInputParam.value) {
                         this.isNoFilters = false;
                     }
@@ -1496,9 +1565,15 @@ export default class ers_datatableCPE extends LightningElement {
                         switch (changedAttribute) { 
                             case 'columnFields':
                                 this.wiz_columnFields = value;
+                                console.log('get columnFields , 1522' , value);
                                 break;
                             case 'columnAlignments':
                                 this.wiz_columnAlignments = value;
+                                break;
+                            case 'summaryFieldsJson':
+                                console.log('1540 CPE wiz_SummaryFieldsJson: -> ',value);
+                                this.wiz_SummaryFieldsJson = value;
+                                this.updateFlowParam(name, value, null, defaults.NOENCODE);
                                 break;
                             case 'columnEdits':
                                 this.wiz_columnEdits = value;

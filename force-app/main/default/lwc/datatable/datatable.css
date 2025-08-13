@@ -32,3 +32,14 @@
         flex: 1 1 100%;
     }
 }
+
+
+.red-cell {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.green-cell {
+    color: #008000;
+    font-weight: bold;
+}

@@ -821,6 +821,21 @@
                 automatic-output-variables={automaticOutputVariables}>
             </c-fsc_flow-combobox>
 
+
+
+             <!-- summary json -->
+            <c-fsc_flow-combobox 
+                name="select_summaryFieldsJson" 
+                label={inputValues.summaryFieldsJson.label}
+                value={inputValues.summaryFieldsJson.value} 
+                value-type={inputValues.summaryFieldsJson.valueDataType}
+                field-level-help={inputValues.summaryFieldsJson.helpText}
+                builder-context-filter-collection-boolean={inputValues.summaryFieldsJson.isCollection}
+                builder-context={_builderContext} 
+                onvaluechanged={handleFlowComboboxValueChange}
+                automatic-output-variables={automaticOutputVariables}>
+            </c-fsc_flow-combobox>
+
         </div>
     </div>
 

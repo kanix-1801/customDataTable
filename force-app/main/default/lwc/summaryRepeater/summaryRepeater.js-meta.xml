@@ -13,6 +13,7 @@
             <property name="objectName" type="String" label="pass vObject" />
             <property name="summaryJson" type="String" label="Output Map (JSON)" role="outputOnly"/>
             <property name="summaryMapJson" type="String[]" label="Summary Output Map (JSON)" role="outputOnly"/>
+            <property name="validationMapJson" type="String[]" label="validation Output Map (JSON)" role="outputOnly"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

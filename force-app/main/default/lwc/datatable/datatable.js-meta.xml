@@ -62,6 +62,7 @@
             <!-- Configuration Mode Only - Inputs/Outputs -->
             <property name="objectName" label="Wizard Only - Selected SObject" type="String"/>
             <property name="wizSObject" label="Wizard Only - Selected SObject" type="String" role="outputOnly"/>
+            <property name="wizSummaryFieldsJson" label="Wizard Only - Selected SummaryFieldsJson" type="String" role="outputOnly"/>
             <property name="wizColumnFields" label="Wizard Only - Column Fields" type="String" role="outputOnly"/>
             <property name="wizColumnAlignments" label="Wizard Only - Column Alignments" type="String" role="outputOnly"/>
             <property name="wizColumnEdits" label="Wizard Only - Column Edits" type="String" role="outputOnly"/>
@@ -76,6 +77,8 @@
             <property name="wizColumnOtherAttributes" label="Wizard Only - Special Other Attributes" type="String" role="outputOnly"/>
 
             <!-- Forcing sort order of parameters with special characters _(1) -(2) .(3) -->  
+            <property name="summaryFieldsJson" label="-summaryFieldsJson  (formulaFieldName#:Formula,...)" type="String" role="inputOnly" description="Comma separated list of FormulaFields:Formula Value (left,center,right).  
+                --  NOTE: formulaFieldName can be either the Formula Column Name"/>
             <property name="columnFields" label="_ Column Fields" type="String" role="inputOnly" description="REQUIRED: Comma separated list of field API Names to display in the datatable."/>
             <property name="columnAlignments" label="- Column Alignments (Col#:alignment,...)" type="String" role="inputOnly" description="Comma separated list of ColID:Alignment Value (left,center,right).  
                 --  NOTE: ColIDs can be either the column number or the field API Name"/>
@@ -178,7 +181,7 @@
 
 
             <!-- NOTE: for custom summary fields -->
-             <property name="summaryFieldsJson" label="get summary json" type="String[]" role="inputOnly"/>
+             <!-- <property name="summaryFieldsJson" label="get summary json" type="String[]" role="inputOnly"/> -->
             <!-- NOTE: for custom summary fields -->
 
         </targetConfig>

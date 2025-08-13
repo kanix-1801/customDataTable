@@ -15,6 +15,7 @@ import {
   FlowNavigationNextEvent
 } from "lightning/flowSupport";
 import { getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import {
   getConstants,
   columnValue,
@@ -50,6 +51,7 @@ import ShowingPageMiddle from "@salesforce/label/c.ers_ShowingPageMiddle";
 import ShowingPageSuffix from "@salesforce/label/c.ers_ShowingPageSuffix";
 import FilterBlankLabel from "@salesforce/label/c.ers_filterBlankLabel";
 import FilterBlankHelpText from "@salesforce/label/c.ers_filterBlankHelpText";
+import Amount from "@salesforce/schema/Opportunity.Amount";
 // import CallCenter from '@salesforce/schema/User.CallCenter';
 
 const CONSTANTS = getConstants(); // From ers_datatableUtils
@@ -95,6 +97,7 @@ export default class Datatable extends LightningElement {
     FilterBlankHelpText
   };
 
+  mainSummaryJson;
   // Component Input & Output Attributes
   //@api tableData = []; see new version below
   @api parentCall;
@@ -497,160 +500,242 @@ export default class Datatable extends LightningElement {
   @track summaryCalculation = [];
   @api summaryFieldsJson;
 
-  summaryFieldsJson2 = [
-    '{summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
-    '{ summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
-    '{ summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
-    '{ summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
-    '{ summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
-    '{ summaryField : "Amount" , summaryType: "min" , Coulmn_Name: "amounts min}'
-  ];
+  // summaryFieldsJson2 = [
+  //   '{ summaryField : "Amount" , summaryType: "sum" , Coulmn_Name: "amounts SUM}',
+  //   '{ summaryField : "Amount" , summaryType: "avg" , Coulmn_Name: "amounts avg}',
+  //   '{ summaryField : "Amount" , summaryType: "min" , Coulmn_Name: "amounts min}'
+  // ];
+
 
   calculateSummaryFields(values) {
     this.summaryCalculation = [];
 
-    const parseSummaryItem = (raw) => {
-      if (!raw && raw !== 0) return null;
-      // If it's already an object (or Proxy of object), return it
-      if (typeof raw === "object") return raw;
+    console.log('mainSummaryJson:', this.mainSummaryJson);
 
-      let s = String(raw).trim();
+    // If mainSummaryJson is a string, parse it first
+    let summaryConfig = typeof this.mainSummaryJson === 'string' 
+        ? JSON.parse(this.mainSummaryJson) 
+        : this.mainSummaryJson;
 
-      console.log("from DataTable : s", s);
-      console.log("from DataTable : s", s);
+    // Convert the new format to the old format structure
+    const summaryCalObjects = [];
+    
+    for (const [columnName, configStr] of Object.entries(summaryConfig)) {
+        // Extract field and operation from strings like "{Amount,sum}"
+        const match = configStr.match(/\{([^,]+),([^}]+)\}/);
+        if (match) {
+            summaryCalObjects.push({
+                Coulmn_Name: columnName,
+                summaryField: match[1],  // e.g. "Amount"
+                summaryType: match[2]    // e.g. "sum"
+            });
+        }
+    }
 
-      // If the string is quoted like '"{...}"', unwrap it
-      if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1).trim();
+    console.log("Converted summary config:", summaryCalObjects);
 
-      // Remove surrounding braces if present
-      if (s.startsWith("{")) s = s.slice(1);
-      if (s.endsWith("}")) s = s.slice(0, -1);
-
-      const obj = {};
-      console.log("from DataTable :obj", obj);
-      // Regex: key : "double-quoted"  OR  'single-quoted'  OR  unquoted (until comma)
-      const pairRe =
-        /([A-Za-z0-9_]+)\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,]+))(?:,|$)/g;
-      let m;
-      console.log("from DataTable : pairRe", pairRe);
-      while ((m = pairRe.exec(s)) !== null) {
-        const key = m[1].trim();
-        // prefer double-quoted capture, then single-quoted, then unquoted
-        let val = (m[2] ?? m[3] ?? m[4] ?? "").trim();
-
-        // Clean leftover trailing braces/quotes if any
-        val = val
-          .replace(/^\s*["']?/, "")
-          .replace(/["']?\s*$/, "")
-          .replace(/}$/, "")
-          .trim();
-
-        obj[key] = val;
-        console.log("from DataTable : obj[key] ", obj[key]);
-      }
-
-      // If regex failed to capture anything, return null
-      console.log("s , s", obj);
-      console.log("obj ", JSON.stringify(obj));
-      if (Object.keys(obj).length === 0) {
-        console.warn("parseSummaryItem: could not parse item", raw);
-        return null;
-      }
-      return obj;
-    };
-
-    // Convert this.summaryCal to array of objects
-    const summaryCalArr = Array.isArray(this.summaryFieldsJson2)
-      ? this.summaryFieldsJson2
-      : [];
-    const summaryCalObjects = summaryCalArr
-      .map(parseSummaryItem)
-      .filter(Boolean);
-
-    console.log("from DataTable : Parsed summaryCalObjects:", summaryCalObjects);
-
-    // Parse records input (values). It may be a JSON string or already an array.
+    // Parse records input (values)
     let recordsArray = [];
     try {
-      recordsArray = typeof values === "string" ? JSON.parse(values) : values;
-      if (!Array.isArray(recordsArray))
-        throw new Error("records is not an array");
+        recordsArray = typeof values === 'string' ? JSON.parse(values) : values;
+        if (!Array.isArray(recordsArray)) {
+            throw new Error("records is not an array");
+        }
     } catch (e) {
-      console.error(
-        "Invalid records input (expected JSON array or array):",
-        e,
-        values
-      );
-      return;
+        console.error("Invalid records input:", e, values);
+        return;
     }
+
+    // Process each summary configuration
     let i = 0;
     summaryCalObjects.forEach((item) => {
+        const fieldName = item.summaryField;
+        const summaryType = (item.summaryType || "").toLowerCase();
 
-      const fieldName = item.summaryField;
-      const summaryType = (item.summaryType || "").toLowerCase();
+        const rawValues = recordsArray
+            .map((r) => r[fieldName])
+            .filter((v) => v !== undefined && v !== null);
 
-      const rawValues = recordsArray
-        .map((r) => r[fieldName])
-        .filter((v) => v !== undefined && v !== null);
+        const numericValues = rawValues
+            .map((v) => (typeof v === 'number' ? v : parseFloat(v)))
+            .filter((n) => !Number.isNaN(n));
 
-      const numericValues = rawValues
-        .map((v) => (typeof v === "number" ? v : parseFloat(v)))
-        .filter((n) => !Number.isNaN(n));
+        let result = null;
+        switch (summaryType) {
+            case "sum":
+                result = numericValues.reduce((a, b) => a + b, 0);
+                break;
+            case "avg":
+                result = numericValues.length
+                    ? numericValues.reduce((a, b) => a + b, 0) / numericValues.length
+                    : 0;
+                break;
+            case "min":
+                result = numericValues.length ? Math.min(...numericValues) : null;
+                break;
+            case "max":
+                result = numericValues.length ? Math.max(...numericValues) : null;
+                break;
+            case "count":
+                result = rawValues.length;
+                break;
+            default:
+                console.warn("Unsupported summaryType:", summaryType, "for item", item);
+        }
 
-      let result = null;
-      switch (summaryType) {
-        case "sum":
-          result = numericValues.reduce((a, b) => a + b, 0);
-          break;
-        case "avg":
-          result = numericValues.length
-            ? numericValues.reduce((a, b) => a + b, 0) / numericValues.length
-            : 0;
-          break;
-        case "min":
-          result = numericValues.length ? Math.min(...numericValues) : null;
-          break;
-        case "max":
-          result = numericValues.length ? Math.max(...numericValues) : null;
-          break;
-        case "count":
-          result = rawValues.length;
-          break;
-        default:
-          console.warn(
-            "Unsupported summaryType:",
-            summaryType,
-            "for item",
-            item
-          );
-      }
-
-      this.summaryCalculation.push({
-        Id : i++,
-        summaryField: item.summaryField,
-        summaryType: item.summaryType,
-        Coulmn_Name: item.Coulmn_Name,
-        result: result
-      });
+        this.summaryCalculation.push({
+            Id: i++,
+            summaryField: item.summaryField,
+            summaryType: item.summaryType,
+            Coulmn_Name: item.Coulmn_Name,
+            result: result
+        });
     });
 
-    console.log(
-      "from DataTable : summaryCalculation",
-      this.summaryCalculation
-    );
-    console.log(
-      "from DataTable : summaryCalculation",
-      JSON.stringify(this.summaryCalculation)
-    );
-  }
+    console.log("Summary calculation results:", this.summaryCalculation);
+}
+  // calculateSummaryFields(values) {
+  //   this.summaryCalculation = [];
+
+  //   console.log('mainSummaryJson : ' , this.mainSummaryJson);
+
+  //   const parseSummaryItem = (raw) => {
+  //     if (!raw && raw !== 0) return null;
+  //     // If it's already an object (or Proxy of object), return it
+  //     if (typeof raw === "object") return raw;
+
+  //     let s = String(raw).trim();
+
+  //     console.log("from DataTable : s", s);
+  //     console.log("from DataTable : s", s);
+
+  //     // If the string is quoted like '"{...}"', unwrap it
+  //     if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1).trim();
+
+  //     // Remove surrounding braces if present
+  //     if (s.startsWith("{")) s = s.slice(1);
+  //     if (s.endsWith("}")) s = s.slice(0, -1);
+
+  //     const obj = {};
+  //     console.log("from DataTable :obj", obj);
+  //     // Regex: key : "double-quoted"  OR  'single-quoted'  OR  unquoted (until comma)
+  //     const pairRe =
+  //       /([A-Za-z0-9_]+)\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,]+))(?:,|$)/g;
+  //     let m;
+  //     console.log("from DataTable : pairRe", pairRe);
+  //     while ((m = pairRe.exec(s)) !== null) {
+  //       const key = m[1].trim();
+  //       // prefer double-quoted capture, then single-quoted, then unquoted
+  //       let val = (m[2] ?? m[3] ?? m[4] ?? "").trim();
+
+  //       // Clean leftover trailing braces/quotes if any
+  //       val = val
+  //         .replace(/^\s*["']?/, "")
+  //         .replace(/["']?\s*$/, "")
+  //         .replace(/}$/, "")
+  //         .trim();
+
+  //       obj[key] = val;
+  //       console.log("from DataTable : obj[key] ", obj[key]);
+  //     }
+
+  //     // If regex failed to capture anything, return null
+  //     console.log("s , s", obj);
+  //     console.log("obj ", JSON.stringify(obj));
+  //     if (Object.keys(obj).length === 0) {
+  //       console.warn("parseSummaryItem: could not parse item", raw);
+  //       return null;
+  //     }
+  //     return obj;
+  //   };
+
+  //   // Convert this.summaryCal to array of objects
+  //   const summaryCalArr = Array.isArray(this.summaryFieldsJson2)
+  //     ? this.summaryFieldsJson2
+  //     : [];
+  //   const summaryCalObjects = summaryCalArr
+  //     .map(parseSummaryItem)
+  //     .filter(Boolean);
+
+  //   console.log("from DataTable : Parsed summaryCalObjects:", summaryCalObjects);
+
+  //   console.log('this is ===> summaryFieldsJson' , this.summaryFieldsJson);
+  //   // console.log('this is ===> summaryFieldsJson' , JSON.stringify(this.summaryFieldsJson));
+
+  //   // Parse records input (values). It may be a JSON string or already an array.
+  //   let recordsArray = [];
+  //   try {
+  //     recordsArray = typeof values === "string" ? JSON.parse(values) : values;
+  //     if (!Array.isArray(recordsArray))
+  //       throw new Error("records is not an array");
+  //   } catch (e) {
+  //     console.error(
+  //       "Invalid records input (expected JSON array or array):",
+  //       e,
+  //       values
+  //     );
+  //     return;
+  //   }
+  //   let i = 0;
+  //   summaryCalObjects.forEach((item) => {
+
+  //     const fieldName = item.summaryField;
+  //     const summaryType = (item.summaryType || "").toLowerCase();
+
+  //     const rawValues = recordsArray
+  //       .map((r) => r[fieldName])
+  //       .filter((v) => v !== undefined && v !== null);
+
+  //     const numericValues = rawValues
+  //       .map((v) => (typeof v === "number" ? v : parseFloat(v)))
+  //       .filter((n) => !Number.isNaN(n));
+
+  //     let result = null;
+  //     switch (summaryType) {
+  //       case "sum":
+  //         result = numericValues.reduce((a, b) => a + b, 0);
+  //         break;
+  //       case "avg":
+  //         result = numericValues.length
+  //           ? numericValues.reduce((a, b) => a + b, 0) / numericValues.length
+  //           : 0;
+  //         break;
+  //       case "min":
+  //         result = numericValues.length ? Math.min(...numericValues) : null;
+  //         break;
+  //       case "max":
+  //         result = numericValues.length ? Math.max(...numericValues) : null;
+  //         break;
+  //       case "count":
+  //         result = rawValues.length;
+  //         break;
+  //       default:
+  //         console.warn(
+  //           "Unsupported summaryType:",
+  //           summaryType,
+  //           "for item",
+  //           item
+  //         );
+  //     }
+
+  //     this.summaryCalculation.push({
+  //       Id : i++,
+  //       summaryField: item.summaryField,
+  //       summaryType: item.summaryType,
+  //       Coulmn_Name: item.Coulmn_Name,
+  //       result: result
+  //     });
+  //   });
+
+  //   console.log(
+  //     "from DataTable : summaryCalculation",
+  //     this.summaryCalculation
+  //   );
+  //   console.log(
+  //     "from DataTable : summaryCalculation",
+  //     JSON.stringify(this.summaryCalculation)
+  //   );
+  // }
   // for custom summary fields
 
   // v4.1.1 Make Apex-Defined data reactive
@@ -660,7 +745,6 @@ export default class Datatable extends LightningElement {
     return this._tableDataString;
   }
   set tableDataString(value) {
-    this.calculateSummaryFields(value);
     if (this.isUpdateTable) {
       if (value.length > 0) {
         this._tableDataString = value;
@@ -711,6 +795,7 @@ export default class Datatable extends LightningElement {
   // Configuration Wizard Only - Output Attributes
   @api wizSObject;
   @api wizColumnFields;
+  @api wizSummaryFieldsJson;
   @api wizColumnAlignments;
   @api wizColumnEdits;
   @api wizColumnFilters;
@@ -1010,9 +1095,25 @@ export default class Datatable extends LightningElement {
   get paginatedData() {
     return this._paginatedData;
   }
-  set paginatedData(value = this._mydata) {
-    this._paginatedData = value;
-  }
+//   set paginatedData(value = this._mydata) {
+//     this._paginatedData = value;
+//   }
+set paginatedData(value = this._mydata) {
+    this._paginatedData = value.map(row => {
+        let rowClass = '';
+
+        if (row.Amount === 0) {
+            rowClass = 'red-row';
+        } else if (row.Amount > 85000) {
+            rowClass = 'green-row';
+        }
+
+        return {
+            ...row,
+            rowClass
+        };
+    });
+}
   _paginatedData;
 
   @api paginatedSelectedRows = [];
@@ -1200,6 +1301,10 @@ export default class Datatable extends LightningElement {
     // Decode config mode attributes
     if (this.isConfigMode) {
       this.columnAlignments = decodeURIComponent(this.columnAlignments);
+      this.summaryFieldsJson = decodeURIComponent(this.summaryFieldsJson);
+      this.mainSummaryJson = decodeURIComponent(this.summaryFieldsJson);
+      console.log('this.mainSummaryJson' , this.mainSummaryJson);
+      console.log('summaryFieldsJson ' , this.summaryFieldsJson);
       this.columnEdits = decodeURIComponent(this.columnEdits);
       this.columnFilters = decodeURIComponent(this.columnFilters);
       this.columnIcons = decodeURIComponent(this.columnIcons);
@@ -1567,6 +1672,9 @@ export default class Datatable extends LightningElement {
     if (this._tableData) {
       // Set other initial values here
       this.wizColumnFields = this.columnFields;
+      this.wizSummaryFieldsJson = this.summaryFieldsJson;
+
+      console.log('this.wizSummaryFieldsJson : ' , this.wizSummaryFieldsJson);
 
       console.log(this.consoleLogPrefix + "Processing Datatable");
       this.processDatatable();
@@ -1695,6 +1803,9 @@ export default class Datatable extends LightningElement {
               "Lookup Fields ~ returnResults.lookupFieldList.toString()",
             returnResults.lookupFieldList.toString()
           );
+          if(this.mainSummaryJson != null){
+            this.calculateSummaryFields(this.recordData);
+          }
           this.percentFieldArray =
             returnResults.percentFieldList.length > 0
               ? returnResults.percentFieldList.toString().split(",")
@@ -2770,16 +2881,107 @@ export default class Datatable extends LightningElement {
     this.handleCellChange(event);
   }
 
+  errorMessages = [];
+  
   handleCellChange(event) {
+    // const validationJson = ["{ field: "Phone", operator: "equal", value: "(014) 427-4426" }" ,
+    //    "{ field: "Amount", operator: "lt", value: "270000" }"]
+
+    const validationJson = [
+    // { field: "Phone", operator: "equal", value: "(014) 427-4426" },
+    { field: "Amount", operator: "lt", value: "270000" },
+    { field: "Amount", operator: "equal", value: "0" }
+  ];
     let rowKey = event.detail.draftValues[0][this.keyField];
+    console.log('event.detail' , JSON.stringify(event.detail));
+    console.log('rowKey' , rowKey);
+    let changedFieldAndValue = event.detail.draftValues[0];
+    console.log('changedFieldAndValue : ' , changedFieldAndValue);
     // TODO - Add validation logic here (and change cellattribute to show red background?)
     // TODO - Build collection of errors by Row/Field, Check & Clear if error is resolved, SuppressBottomBar and show messages instead if there are any errors in the collection
     // TODO - Add support for User Defined Validation Rules
     // If suppressBottomBar is false, wait for the Save or Cancel button
-    if (this.suppressBottomBar) {
-      this.handleSave(event);
-    }
+  //   if (this.suppressBottomBar) {
+  //     this.handleSave(event);
+  //   }
+  // }
+  const isValid = !this.checkValidation(changedFieldAndValue , validationJson);
+      console.log("isValid : " , isValid);
+
+      // if (!isValid) {
+      //   hasError = true;
+      //   this.errorMessages.push(`Validation failed:  violates rule`);
+      // }
+  //  Object.keys(draftValue).forEach(fieldName => {
+  //   if (fieldName !== this.keyField) {
+  //     const newValue = draftValue[fieldName];
+  //     const isValid = this.checkValidation(fieldName, newValue, validationJson);
+      
+  //     if (!isValid) {
+  //       hasError = true;
+  //       this.errorMessages.push(`Validation failed: ${fieldName} violates rule`);
+  //     }
+  //   }
+  // });
+
+  // if (!isValid) {
+  //   console.error("Validation errors:", this.errorMessages[0]);
+  //   this.showErrorOnRow();
+  //   return; // prevent save
+  // }
+
+  if (this.suppressBottomBar) {
+    this.handleSave(event);
   }
+}
+
+checkValidation(changes, validationRules) {
+  console.log('checkValidation : changes', changes);
+  console.log('checkValidation : validationRules', validationRules);
+  let isValid = true;
+
+  validationRules.forEach(rule => {
+    const { field, operator, value } = rule;
+
+    if (changes.hasOwnProperty(field)) {  // ✅ check if field exists
+      console.log(`Field '${field}' is present`);
+      const changeValue = changes[field]; // ✅ get value from object
+
+      switch (operator) {
+        case "equal":
+          isValid = changeValue == value;
+          break;
+        case "lt":
+          isValid = Number(changeValue) < Number(value);
+          break;
+        case "lte":
+          isValid = Number(changeValue) <= Number(value);
+          break;
+        case "gt":
+          isValid = Number(changeValue) > Number(value);
+          break;
+        case "gte":
+          isValid = Number(changeValue) >= Number(value);
+          break;
+        case "notEqual":
+          isValid = changeValue != value;
+          break;
+        default:
+          console.error(`Unknown operator '${operator}' for field '${field}'.`);
+      }
+
+      if (isValid) {
+        console.error(`Validation failed: ${field} violates rule ${operator} ${value}`);
+        this.showToast('Error', `Validation failed: ${field} violates rule ${operator} ${value}`, 'error');
+      }
+    }
+  });
+  return isValid;
+}
+
+showErrorOnRow() {
+  console.log('ERRRRRRRRRRROOOOOOOOR : rowKey, messages');
+}
 
   handleSave(event) {
     // Only used with inline editing
@@ -4163,4 +4365,14 @@ export default class Datatable extends LightningElement {
   setIsInvalidFlag(value) {
     this.isInvalid = value;
   }
+
+  showToast(title, message, variant) {
+        const event = new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant,
+            // mode: 'sticky' // stays until user closes it
+        });
+        this.dispatchEvent(event);
+    }
 }
