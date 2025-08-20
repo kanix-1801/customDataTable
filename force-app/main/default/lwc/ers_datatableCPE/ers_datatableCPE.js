@@ -22,20 +22,10 @@ const CB_TRUE = CONSTANTS.CB_TRUE;
 const CB_FALSE = CONSTANTS.CB_FALSE;
 const CB_PREFIX = CONSTANTS.CB_ATTRIB_PREFIX;
 const RECORDS_PER_PAGE = CONSTANTS.RECORDS_PER_PAGE;
-const DEFAULT_ACTION = CONSTANTS.DEFAULT_ACTION;
-const DEFAULT_DISPLAY_TYPE = CONSTANTS.DEFAULT_DISPLAY_TYPE;
-const PERFORM_ACTION_LABEL = CONSTANTS.PERFORM_ACTION_LABEL;
 const REMOVE_ROW_LABEL = CONSTANTS.REMOVE_ROW_LABEL;
-const RUN_FLOW_LABEL = CONSTANTS.RUN_FLOW_LABEL;
-const DEFAULT_ICON = CONSTANTS.DEFAULT_ICON;
-const PERFORM_ACTION_ICON = CONSTANTS.PERFORM_ACTION_ICON;
 const REMOVE_ROW_ICON = CONSTANTS.REMOVE_ROW_ICON;
-const RUN_FLOW_ICON = CONSTANTS.RUN_FLOW_ICON;
-const DEFAULT_COLOR = CONSTANTS.DEFAULT_COLOR;
-const PERFORM_ACTION_COLOR = CONSTANTS.PERFORM_ACTION_COLOR;
 const REMOVE_ROW_COLOR = CONSTANTS.REMOVE_ROW_COLOR;
-const RUN_FLOW_COLOR = CONSTANTS.RUN_FLOW_COLOR;
-const ACTION_BUTTON_SIDE = CONSTANTS.ACTION_BUTTON_SIDE;
+const REMOVE_ROW_SIDE = CONSTANTS.REMOVE_ROW_SIDE;
 const SHOW_DEBUG_INFO = CONSTANTS.SHOW_DEBUG_INFO;
 const DEBUG_INFO_PREFIX = CONSTANTS.DEBUG_INFO_PREFIX;
 
@@ -87,6 +77,10 @@ export default class ers_datatableCPE extends LightningElement {
     _automaticOutputVariables;
 
     // These are the parameter values being seeded to & coming back from the Wizard Flow
+    _wiz_formulaFields;
+    _wiz_summaryFields;
+    _wiz_validationFields;
+
     _wiz_columnFields;
     _wiz_columnAlignments;
     _wiz_columnEdits;
@@ -99,12 +93,9 @@ export default class ers_datatableCPE extends LightningElement {
     _wiz_columnCellAttribs;
     _wiz_columnTypeAttribs;
     _wiz_columnOtherAttribs;
-    _wiz_SummaryFieldsJson;
-
 
     vSelectionMethod;
     vFieldList = '';
-    vsummaryFieldsJson=''
     isEarlyExit = true;
     colFieldList = [];
     validateErrors = [];
@@ -250,64 +241,15 @@ export default class ers_datatableCPE extends LightningElement {
     get showHideRemoveRowAction() {
         return (this.inputValues.cb_isRemoveRowAction.value == CB_TRUE) ? 'slds-show' : 'slds-hide';
     }
-    get showHideRowAction() {               // v4.3.5 Use for any row action
-        return this.showHideRemoveRowAction;
-    }
 
-    get showHideMaxNumberRows() {
-        return (this.inputValues.rowActionType.value == 'Remove Row') ? 'slds-show' : 'slds-hide';
-    }
-
-    get showRowActionIcon() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? 'slds-show' : 'slds-hide';
-    }
-
-    get showRowActionButtonIconColor() {
-        return (this.inputValues.rowActionDisplay.value != 'Button') ? 'slds-show' : 'slds-hide';
-    }
-
-    get showRowActionButtonIconPosition() {
-        return (this.inputValues.rowActionDisplay.value == 'Both') ? 'slds-show' : 'slds-hide';
-    }
-
-    get showButtonOptions() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? 'slds-hide' : 'slds-show';
-    }
-    
     @api
     get removeRowActionClass() {
         return (this.inputValues.cb_isRemoveRowAction.value == CB_TRUE) ? 'slds-box slds-box_x-small slds-m-top_small' : '';
-    }
-    get rowActionClass() {                  // v4.3.5 Use for any row action
-        return this.removeRowActionClass;
     }
 
     @api
     get removeRowActionCheckboxClass() {
         return (this.inputValues.cb_isRemoveRowAction.value == CB_TRUE) ? '' : 'slds-m-top_xx-small';
-    }
-    get rowActionCheckboxClass() {          // v4.3.5 Use for any row action
-        return this.removeRowActionCheckboxClass;
-    }
-
-    get sampleActionClass() {
-        return 'slds-box slds-box_x-small slds-m-top_xx-small';
-    }
-
-    get rowActionInputLabel() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? this.inputValues.removeLabel.label : this.inputValues.rowActionButtonLabel.label;
-    }
-
-    get rowActionInputLabelHelp() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? this.inputValues.removeLabel.helpText : this.inputValues.rowActionButtonLabel.helpText;
-    }
-
-    get rowActionInputIcon() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? this.inputValues.removeIcon.label : this.inputValues.rowActionButtonIcon.label;
-    }
-
-    get rowActionInputIconHelp() {
-        return (this.inputValues.rowActionDisplay.value == 'Icon') ? this.inputValues.removeIcon.helpText : this.inputValues.rowActionButtonIcon.helpText;
     }
 
     @api
@@ -354,6 +296,53 @@ export default class ers_datatableCPE extends LightningElement {
         return this.inputValues.hideCheckboxColumn.value;
     }
 
+
+
+
+  @api
+    get wiz_formulaFields() { 
+        return this._wiz_formulaFields;
+    }
+    set wiz_formulaFields(value) { 
+        const name = 'formulaFields';
+        this._wiz_formulaFields = value;
+        this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+        this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
+        this.updateFlowParam(defaults.wizardAttributePrefix + name, value, ''); 
+    }
+
+     @api
+    get wiz_validationFields() { 
+        return this._wiz_validationFields;
+    }
+    set wiz_validationFields(value) { 
+        const name = 'validationFields';
+        this._wiz_validationFields = value;
+        this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+        this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
+        this.updateFlowParam(defaults.wizardAttributePrefix + name, value, ''); 
+    }
+
+     @api
+    get wiz_summaryFields() { 
+        return this._wiz_summaryFields;
+    }
+    set wiz_summaryFields(value) { 
+        const name = 'summaryFields';
+        this._wiz_summaryFields = value;
+        this.dispatchValue = (value) ? decodeURIComponent(value) : '';
+        this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
+        this.updateFlowParam(defaults.wizardAttributePrefix + name, value, ''); 
+    }
+
+
+
+
+
+
+
+
+
     @api
     get wiz_columnFields() { 
         return this._wiz_columnFields;
@@ -365,57 +354,11 @@ export default class ers_datatableCPE extends LightningElement {
         this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
         this.updateFlowParam(defaults.wizardAttributePrefix + name, value, ''); 
         if (value) {
-            console.log('ks -- Value' , value);
             this.vFieldList = value;
-            console.log('ks -- this.vFieldList ' , this.vFieldList);
             this.updateFlowParam('vFieldList', this.vFieldList, null, defaults.NOENCODE);
             this.createFieldCollection(this.vFieldList);
         }
     }
-
-//     @api
-//     get _wiz_summaryFieldsJson() { 
-//         return this._wiz_summaryFieldsJson;
-//     }
-    
-// }
-
-
-    @api
-    get wiz_SummaryFieldsJson() { 
-        return this._wiz_SummaryFieldsJson;
-    }
-    set wiz_SummaryFieldsJson(value) { 
-        const name = 'summaryFieldsJson';
-      try {
-        this.dispatchValue = (value) ? decodeURIComponent(value) : '';
-    } catch (e) {
-        console.error('Failed to decode formula field:', e);
-        // this.dispatchValue = '';
-        // }
-    }
-    console.log('formula set is RUN  this._wiz_FormulaFields-->', this._wiz_SummaryFieldsJson)
-        //this.dispatchValue = (value) ? decodeURIComponent(value) : '';
-        console.log('formula this.dispatchValues-->', this.dispatchValue)
-        this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
-        this.updateFlowParam(defaults.wizardAttributePrefix + name, value, '');
-}
-    // set wiz_FormulaFields(value) { 
-    //     const name = 'formulaFields';
-    //   try {
-    //     this.dispatchValue = (value) ? decodeURIComponent(value) : '';
-    // } catch (e) {
-    //     console.error('Failed to decode formula field:', e);
-    //     this.dispatchValue = '';
-    // }
-
-    //     //this._wiz_FormulaFields = value;
-    //     console.log('formula set is RUN  this._wiz_FormulaFields-->', this._wiz_FormulaFields)
-    //     //this.dispatchValue = (value) ? decodeURIComponent(value) : '';
-    //     console.log('formula this.dispatchValues-->', this.dispatchValue)
-    //     this.dispatchFlowValueChangeEvent(name, this.dispatchValue, 'String');
-    //     this.updateFlowParam(defaults.wizardAttributePrefix + name, value, '');    
-    // }
 
     @api
     get wiz_columnAlignments() { 
@@ -570,11 +513,27 @@ export default class ers_datatableCPE extends LightningElement {
             helpText: 'Object Collection string variable containing the records to display in the datatable.'},
         preSelectedRowsString: {value: null, valueDataType: null, isCollection: false, label: 'Pre-Selected Rows String', 
             helpText: 'Object Collection string variable containing the records to show as pre-selected in the datatable.'},
+
+
+
+
+        formulaFields: {value: null, valueDataType: null, isCollection: false, label: 'Formula Fields', 
+            helpText: "REQUIRED: Comma separated list of Formula Fields to display in the datatable.",
+            isError: false, errorMessage: null},
+
+        summaryFields: {value: null, valueDataType: null, isCollection: false, label: 'Summary Fields', 
+            helpText: "REQUIRED: Comma separated list of Summary Fields to display in the datatable.",
+            isError: false, errorMessage: null}, 
+
+        validationFields: {value: null, valueDataType: null, isCollection: false, label: 'Validation Fields', 
+            helpText: "REQUIRED: Comma separated list of Validation Fields to display in the datatable.",
+            isError: false, errorMessage: null},  
+
+
+            
         columnFields: {value: null, valueDataType: null, isCollection: false, label: 'Column Fields', 
             helpText: "REQUIRED: Comma separated list of field API Names to display in the datatable.",
             isError: false, errorMessage: null},  
-        summaryFieldsJson: {value: null, valueDataType: null, isCollection: false, label: 'give summaryFieldsJson', 
-            helpText: 'give summaryFieldsJson to use in the Datatable'},
         columnAlignments: {value: null, valueDataType: null, isCollection: false, label: 'Column Alignments (Col#:alignment,...)', 
             helpText: "Comma separated list of ColID:Alignment Value (left,center,right)  \n" +   
             "NOTE: ColIDs can be either the column number or the field API Name"},
@@ -716,31 +675,19 @@ export default class ers_datatableCPE extends LightningElement {
         isSerializedRecordData: {value: null, valueDataType: null, isCollection: false, label: 'Input data is Serialized', 
             helpText: 'Select if you want the datatable to be able to accept serialized data.'},
         cb_isSerializedRecordData: {value: null, valueDataType: null, isCollection: false, label: ''},
-        isRemoveRowAction: {value: null, valueDataType: null, isCollection: false, label: 'Add a Row Action', 
-            helpText: 'Select if you want to add a Row Action to each row of the datatable.'},
+        isRemoveRowAction: {value: null, valueDataType: null, isCollection: false, label: 'Add a Remove Row Action Button', 
+            helpText: 'Select if you want to add a Remove Row Action Button to each row of the datatable.'},
         cb_isRemoveRowAction: {value: null, valueDataType: null, isCollection: false, label: ''},
-        rowActionType: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Type', 
-            helpText: 'Select the type of row action.  Current options are Standard and Remove Row.  A Flow row action will be added in the future.'},
-        rowActionDisplay: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Display Type', 
-            helpText: 'Select how you want the row action to appear.  It can be a clickable Icon or a Button with a Label and an optional Icon'},
-        removeLabel: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Label', 
-            helpText: 'This value will be used as the text that appears when hovering on the Row Action Button (Default: Perform Action, Remove Row or Run Flow)'},
-        removeRowLeftOrRight: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Column Location', 
-                helpText: 'Specify if the Row Action column should be on the Left or the Right (Default: Right)'},
-        removeIcon: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Icon', 
-            helpText: 'This is the icon that will be used for the Row Action Button (Default: utility:touch_action, utility:close or utility:flow)'},
-        removeColor: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Icon Color', 
-            helpText: 'This is the color (Dafault, Red, Green or Black) for the icon that will be used for the Row Action Icon'},
+        removeLabel: {value: null, valueDataType: null, isCollection: false, label: 'Remove Row Action Label', 
+            helpText: 'This value will be used as the text that appears when hovering on the Remove Row Action Button (Default: Remove Row)'},
+        removeIcon: {value: null, valueDataType: null, isCollection: false, label: 'Remove Row Action Icon', 
+            helpText: 'This is the icon that will be used for the Remove Row Action Button (Default: utility:close)'},
+        removeColor: {value: null, valueDataType: null, isCollection: false, label: 'Remove Row Action Icon Color', 
+            helpText: 'This is the color (Red, Green or Black) for the icon that will be used for the Remove Row Action Button (Default: Red)'},
         maxRemovedRows: {value: null, valueDataType: null, isCollection: false, label: 'Maximum # of rows that can be removed', 
             helpText: 'Enter a number here if you want to restrict how many rows can be removed from the datatable (Default: 0 - no limit)'},
-        rowActionButtonLabel: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Button Label', 
-            helpText: 'This value will be used as the button text for the Row Action Button (Default: Perform Action, Remove Row or Run Flow)'},
-        rowActionButtonIcon: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Button Icon', 
-            helpText: 'Select an optional icon for the Row Action Button (Default: utility:touch_action, utility:close or utility:flow)'},        
-        rowActionButtonIconPosition: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Button Icon Position', 
-            helpText: 'Specify if the Row Action Button Icon should be on the Left or the Right of the label (Default: Left)'},
-        rowActionButtonVariant: {value: null, valueDataType: null, isCollection: false, label: 'Row Action Button Variant', 
-            helpText: 'Select the Row Action Button Variant.  This determines the visual appearance of the button.'},  
+        removeRowLeftOrRight: {value: null, valueDataType: null, isCollection: false, label: 'Remove Row Action Column Location', 
+            helpText: 'Specify if the Remove Row Action column should be on the Left or the Right (Default: Right)'},
     };
 
     wizardHelpText = 'The Column Wizard Button runs a special Flow where you can select your column fields, manipulate the table to change column widths, '
@@ -815,17 +762,11 @@ export default class ers_datatableCPE extends LightningElement {
         {name: 'rowActions',
             attributes: [
                 {name: 'isRemoveRowAction'},
-                {name: 'rowActionType'},
-                {name: 'maxRemovedRows'},
-                {name: 'rowActionDisplay'},
                 {name: 'removeLabel'},
                 {name: 'removeIcon'},
-                {name: 'rowActionButtonLabel'},
-                {name: 'rowActionButtonIcon'},
-                {name: 'rowActionButtonIconPosition'},
-                {name: 'rowActionButtonVariant'},
                 {name: 'removeColor'},
                 {name: 'removeRowLeftOrRight'},
+                {name: 'maxRemovedRows'},
             ]
         },
         {name: 'advancedAttributes',
@@ -841,9 +782,12 @@ export default class ers_datatableCPE extends LightningElement {
                 {name: defaults.customHelpDefinition, 
                     label: 'For more information on using Apex Defined Objects with Datatable',
                     helpText: 'https://ericsplayground.wordpress.com/how-to-use-an-apex-defined-object-with-my-datatable-flow-component/'},
+                {name: 'formulaFields'},
+                {name: 'summaryFields'},
+                {name: 'validationFields'},
+
                 {name: 'columnFields'},
                 {name: 'columnAlignments'},
-                {name: 'summaryFieldsJson'},
                 {name: 'columnEdits'},
                 {name: 'columnFilters'},
                 {name: 'columnIcons'},
@@ -867,42 +811,7 @@ export default class ers_datatableCPE extends LightningElement {
         }
     ]
 
-    rowActionTypeOptions = [
-        {
-            label: 'Standard',
-            value: 'Standard'
-        },
-        {
-            label: 'Remove Row',
-            value: 'Remove Row'
-        // TODO: Add code needed to support a Run Flow row action
-        // },
-        // {
-        //     label: 'Run Flow',
-        //     value: 'Flow'
-        }
-    ]
-
-    rowActionDisplayOptions = [
-        {
-            label: 'Icon Only',
-            value: 'Icon'
-        },
-        {
-            label: 'Button Only',
-            value: 'Button'
-        },
-        {
-            label: 'Button with Icon',
-            value: 'Both'
-        }
-    ]
-
-    actionButtonIconColorOptions = [
-        {
-            label: 'Default',
-            value: ''
-        },
+    removeColorOptions = [
         {
             label: 'Red',
             value: 'remove-icon'
@@ -917,18 +826,7 @@ export default class ers_datatableCPE extends LightningElement {
         }
     ]
 
-    buttonVariantOptions = [
-        {value: 'base', label: 'Base'},
-        {value: 'neutral', label: 'Neutral'},
-        {value: 'brand', label: 'Brand'},
-        {value: 'brand-outline', label: 'Brand Outline'},
-        {value: 'destructive', label: 'Destructive'},
-        {value: 'destructive-text', label: 'Destructive Text'},
-        {value: 'inverse', label: 'Inverse'},
-        {value: 'success', label: 'Success'}
-    ]
-
-    actionLeftOrRightOptions = [
+    removeLeftOrRightOptions = [
         {
             label: 'Left',
             value: 'Left'
@@ -939,7 +837,6 @@ export default class ers_datatableCPE extends LightningElement {
         }
     ]
 
-    summaryFieldsJsonT = [];
     // settings = { 
     //     attributeObjectName: 'objectName',
     //     attributeFieldName: 'fieldName',
@@ -957,9 +854,13 @@ export default class ers_datatableCPE extends LightningElement {
         {name: 'vSelectionMethod', type: 'String', value: ''},
         {name: 'vFieldList', type: 'String', value: ''},
         {name: 'colFieldList', type: 'String', value: []},
-        {name: 'wiz_SummaryFieldsJson', type: 'String', value: ''},
         {name: 'wiz_columnAlignments', type: 'String', value: ''},
         {name: 'wiz_columnEdits', type: 'String', value: ''},
+
+        {name: 'wiz_formulaFields', type: 'String', value: ''},
+        {name: 'wiz_summaryFields', type: 'String', value: ''},
+        {name: 'wiz_validationFields', type: 'String', value: ''},
+
         {name: 'wiz_columnFields', type: 'String', value: ''},
         {name: 'wiz_columnFilters', type: 'String', value: ''},
         {name: 'wiz_columnLabels', type: 'String', value: ''},
@@ -971,7 +872,6 @@ export default class ers_datatableCPE extends LightningElement {
         {name: 'wiz_columnTypeAttribs', type: 'String', value: ''},
         {name: 'wiz_columnOtherAttribs', type: 'String', value: ''},
         {name: 'vWizRecordCount', type: 'String', value: ''},
-
     ]
 
     @api 
@@ -1015,7 +915,6 @@ export default class ers_datatableCPE extends LightningElement {
 
     set inputVariables(variables) {
         this._inputVariables = variables || [];
-        console.log('variables' , JSON.stringify(variables));
         this.initializeValues();
     }
 
@@ -1039,9 +938,6 @@ export default class ers_datatableCPE extends LightningElement {
                         this.selectedSObject = curInputParam.value;    
                     }
                     if (curInputParam.name == 'columnFields') { 
-                        console.log('get columnFields' , curInputParam);
-                        console.log('get columnFields' , curInputParam.name);
-                        console.log('get columnFields' , curInputParam.value);
                         this.vFieldList = curInputParam.value;
                         this.updateFlowParam('vFieldList', this.vFieldList, null, defaults.NOENCODE);
                         this.createFieldCollection(this.vFieldList);
@@ -1049,19 +945,6 @@ export default class ers_datatableCPE extends LightningElement {
                     if ((curInputParam.name == 'columnEdits') && curInputParam.value) {
                         this.isNoEdits = false;
                     }
-
-                    console.log('curInputParam    ' , curInputParam.name);
-                    if (curInputParam.name == 'summaryFieldsJson') { 
-                         console.log('curInputParam    ' , curInputParam.value);
-                         console.log('summaryFieldsJson : ' , JSON.stringify(curInputParam.value));
-                        this.summaryFieldsJson = curInputParam.value;    
-                    }
-
-                    if ((curInputParam.name == 'formulaFields')) {
-                      console.log('Formula curInputParam-->',curInputParam.value);
-                      this.formulaFields = curInputParam.Value;
-                    }
-                    
                     if ((curInputParam.name == 'columnFilters') && curInputParam.value) {
                         this.isNoFilters = false;
                     }
@@ -1070,12 +953,6 @@ export default class ers_datatableCPE extends LightningElement {
                     }
                     if ((curInputParam.name == 'hideCheckboxColumn') && curInputParam.value) {
                         this.isCheckboxColumnHidden = true;
-                    }
-                    if ((curInputParam.name == 'rowActionButtonIcon') && this.inputValues.rowActionDisplay.value == 'Button') {
-                        this.inputValues.rowActionButtonIcon.value = "";
-                    }
-                    if ((curInputParam.name == 'rowActionDisplay') && curInputParam.value == 'Button') {
-                        this.inputValues.rowActionButtonIcon.value = "";
                     }
 
                     // Handle Wizard Attributes
@@ -1093,6 +970,7 @@ export default class ers_datatableCPE extends LightningElement {
 
         if (this.firstPass) { 
             this.handleDefaultAttributes();
+
             this.handleBuildHelpInfo();
         }
         this.firstPass = false;
@@ -1101,74 +979,23 @@ export default class ers_datatableCPE extends LightningElement {
     handleDefaultAttributes() {
         console.log(DEBUG_INFO_PREFIX+'handle default attributes');
         if (this.inputValues.recordsPerPage.value == null) {
-            this.inputValues.recordsPerPage.value = RECORDS_PER_PAGE.toString();
-        }
-        if (this.inputValues.rowActionDisplay.value == null) {
-            this.inputValues.rowActionDisplay.value = DEFAULT_DISPLAY_TYPE;
+            this.inputValues.recordsPerPage.value = String(RECORDS_PER_PAGE);
         }
         if (this.inputValues.removeLabel.value == null) {
-            this.inputValues.removeLabel.value = DEFAULT_ACTION;
-        }
-        if (this.inputValues.rowActionButtonLabel.value == null) {
-            this.inputValues.rowActionButtonLabel.value = DEFAULT_ACTION;
+            this.inputValues.removeLabel.value = REMOVE_ROW_LABEL;
         }
         if (this.inputValues.removeIcon.value == null) {
-            this.inputValues.removeIcon.value = DEFAULT_ICON;
-        }
-        if (this.inputValues.rowActionButtonIcon.value == null) {
-            this.inputValues.rowActionButtonIcon.value = DEFAULT_ICON;
-        }
-        if (this.inputValues.rowActionType.value == null) {
-            this.inputValues.rowActionType.value = DEFAULT_ACTION;
-            this.updateActionDefaults(DEFAULT_ACTION);
+            this.inputValues.removeIcon.value = REMOVE_ROW_ICON;
         }
         if (this.inputValues.removeColor.value == null) {
-            this.inputValues.removeColor.value = DEFAULT_COLOR;
-        }
-        if (this.inputValues.rowActionButtonIconPosition.value == null) {
-            this.inputValues.rowActionButtonIconPosition.value = 'Left';
-        }
-        if (this.inputValues.rowActionButtonVariant.value == null) {
-            this.inputValues.rowActionButtonVariant.value = 'brand-outline';
+            this.inputValues.removeColor.value = REMOVE_ROW_COLOR;
         }
         if (this.inputValues.removeRowLeftOrRight.value == null) {
-            this.inputValues.removeRowLeftOrRight.value = ACTION_BUTTON_SIDE;
+            this.inputValues.removeRowLeftOrRight.value = REMOVE_ROW_SIDE;
         }
         if (this.inputValues.maxRemovedRows.value == null) {
             this.inputValues.maxRemovedRows.value = 0;
         }
-        if (this.inputValues.rowActionDisplay.value == 'Button') {
-            this.inputValues.rowActionButtonIcon.value = "";
-        }
-    }
-
-    updateActionDefaults(actionType) {
-        let newLabelValue = DEFAULT_ACTION;
-        let newIconValue = DEFAULT_ICON;
-        let newColorValue = DEFAULT_COLOR;
-        if (actionType == 'Standard') {
-            newLabelValue = PERFORM_ACTION_LABEL;
-            newIconValue = PERFORM_ACTION_ICON;
-            newColorValue = PERFORM_ACTION_COLOR;
-        }
-        if (actionType == 'Remove Row') {
-            newLabelValue = REMOVE_ROW_LABEL;
-            newIconValue = REMOVE_ROW_ICON;
-            newColorValue = REMOVE_ROW_COLOR;
-        }
-        if (actionType == 'Flow') {
-            newLabelValue = RUN_FLOW_LABEL;
-            newIconValue = RUN_FLOW_ICON;
-            newColorValue = RUN_FLOW_COLOR;
-        }
-        this.dispatchFlowValueChangeEvent('removeLabel', newLabelValue, 'String');
-        this.dispatchFlowValueChangeEvent('removeIcon', newIconValue, 'String');
-        this.dispatchFlowValueChangeEvent('removeColor', newColorValue, 'String');
-        this.dispatchFlowValueChangeEvent('rowActionButtonLabel', newLabelValue, 'String');
-        if (this.inputValues.rowActionDisplay.value == 'Button') {
-            newIconValue = "";
-        }
-        this.dispatchFlowValueChangeEvent('rowActionButtonIcon', newIconValue, 'String');
     }
 
     handleBuildHelpInfo() {
@@ -1255,17 +1082,6 @@ export default class ers_datatableCPE extends LightningElement {
                     curAttributeType = 'String';
             }
             this.dispatchFlowValueChangeEvent(curAttributeName, curAttributeValue, curAttributeType);
-            if (curAttributeName == 'rowActionType') {
-                this.updateActionDefaults(curAttributeValue);
-            }
-            if (curAttributeName == 'rowActionDisplay') {  // Clear or reset button icon if switching between button only & both
-                this.inputValues.rowActionButtonIcon.value = (curAttributeValue == 'Button') ? "" : this.inputValues.removeIcon.value;
-                this.dispatchFlowValueChangeEvent('rowActionButtonIcon', this.inputValues.rowActionButtonIcon.value, 'String');
-            }
-            if (curAttributeName == 'rowActionType') {  // Clear or reset button icon if switching between action types
-                this.inputValues.rowActionButtonIcon.value = (this.inputValues.rowActionDisplay.value == 'Button') ? "" : this.inputValues.removeIcon.value;
-                this.dispatchFlowValueChangeEvent('rowActionButtonIcon', this.inputValues.rowActionButtonIcon.value, 'String');
-            }
         }
     }
 
@@ -1439,7 +1255,7 @@ export default class ers_datatableCPE extends LightningElement {
         this.setIconAttribute('tableIcon', event);
     }
 
-    handleActionIcon(event) {
+    handleRemoveIcon(event) {
         this.setIconAttribute('removeIcon', event);
     }
 
@@ -1470,11 +1286,6 @@ export default class ers_datatableCPE extends LightningElement {
         }                
         if (newValue) {
             this.inputValues[id].isError = false;   // Clear any prior error before validating again if the field has any value
-        }
-        if (id == 'removeLabel' || id == 'removeIcon') {
-            let otherAttribute = 'rowActionButton'.concat(id.substr(6));
-            this.inputValues[otherAttribute].value = newValue;
-            this.dispatchFlowValueChangeEvent(otherAttribute, newValue, newValueDataType);
         }
     }
 
@@ -1563,17 +1374,20 @@ export default class ers_datatableCPE extends LightningElement {
 
                         // Update the wizard variables to force passing the changed values back to the CPE which will then post to the Flow Builder
                         switch (changedAttribute) { 
+                            case 'formulaFields':
+                                this.wiz_formulaFields = value;
+                                break;
+                            case 'summaryFields':
+                                this.wiz_summaryFields = value;
+                                break;
+                            case 'validationFields':
+                                this.wiz_validationFields = value;
+                                break;
                             case 'columnFields':
                                 this.wiz_columnFields = value;
-                                console.log('get columnFields , 1522' , value);
                                 break;
                             case 'columnAlignments':
                                 this.wiz_columnAlignments = value;
-                                break;
-                            case 'summaryFieldsJson':
-                                console.log('1540 CPE wiz_SummaryFieldsJson: -> ',value);
-                                this.wiz_SummaryFieldsJson = value;
-                                this.updateFlowParam(name, value, null, defaults.NOENCODE);
                                 break;
                             case 'columnEdits':
                                 this.wiz_columnEdits = value;

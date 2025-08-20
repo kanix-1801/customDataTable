@@ -19,16 +19,6 @@
                                    selected-options={_selectedValues}
                                    use-object-value-as-output>
     </c-fsc_extended-base-dual-list-box>
-    <p>Testing for this</p>
-
-    <template if:true={detailValue} for:each={detailValue} for:item="con" for:index="index">
-        <!-- <tamplate if:true={con.type}> -->
-            <li key={con}>
-            {con}
-           </li>
-        <!-- </tamplate> -->
-       
-    </template>
     <template if:false={isDataSet}>
 
     </template>

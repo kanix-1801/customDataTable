@@ -176,9 +176,6 @@ export default class FlowButtonBar extends LightningElement {
             // Don't unselect a button if it is both required and the only selected button
             if (!this.required || this.values.length > 1)
                 this.values.splice(curIndex, 1);
-            if (!this.multiselect) {
-                this.value = clickedValue;
-            }
         } else {
             if (this.multiselect) {
                 this.values.push(clickedValue);
@@ -190,18 +187,6 @@ export default class FlowButtonBar extends LightningElement {
         this.dispatchClickEvent();
         if (!this.isSelectionMode) {
             this.navigateFlow();
-        }
-    }
-    
-    @api validate(){
-        if((!!this.required && !!this.value) || (!!!this.required)) {
-            return { isValid: true }; 
-        } 
-        else { 
-            return { 
-                isValid: false, 
-                errorMessage: 'You must make a selection to continue' 
-            }; 
         }
     }
 
@@ -218,9 +203,7 @@ export default class FlowButtonBar extends LightningElement {
     }
 
     updateSelected() {
-        if (!this.value && this.defaultValue) {
-            this.handleButtonClick(null, this.defaultValue);
-        }
+        
         if (this.isSelectionMode) {
             for (let button of this.template.querySelectorAll('lightning-button')) {
                 button.variant = this.values.includes(button.value) ? VARIANTS.SELECTED : VARIANTS.UNSELECTED;

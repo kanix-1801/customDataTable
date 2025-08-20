@@ -115,6 +115,7 @@ public with sharing class ers_DatatableController {
         if (SHOW_DEBUG_INFO) {
             System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + 'records-' + records);
         }
+        System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + 'records-' + records);
         System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + 'fieldNames-' + fieldNames);
         System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + 'suppressCurrencyConversion-' + suppressCurrencyConversion);
         ReturnResults curRR = new ReturnResults();
@@ -166,6 +167,7 @@ public with sharing class ers_DatatableController {
     @AuraEnabled
     public static ReturnResults getColumnData(ReturnResults curRR, String fields, String objName) {
         if (fields == '') {
+            System.debug('I am going to throw an exception');
             throw new MyApexException(
                 'You must specify at least one field API name from the object ' + objName
             );
@@ -173,7 +175,9 @@ public with sharing class ers_DatatableController {
 
         SObjectType sobjType = ((SObject) (Type.forName('Schema.' + objName).newInstance()))
             .getSObjectType();
+            system.debug('sobjType'+sobjType);
         DescribeSObjectResult objDescribe = sobjType.getDescribe();
+         system.debug('objDescribe 179 --> '+objDescribe);
 
         String datatableColumnFieldDescriptor = '';
         String fieldType = ''; //NOPMD
@@ -189,25 +193,62 @@ public with sharing class ers_DatatableController {
         List<String> picklistFields = new List<String>();
         List<String> currencyFields = new List<String>();
         List<String> numberFields = new List<String>();
+    
+
         Map<String, Map<String, String>> picklistFieldLabels = new Map<String, Map<String, String>>();
         String objectLinkField = getNameUniqueField(objName); // Name (link) Field for the Datatable SObject
-        System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + '*** OBJ/LINK' + objName + '/' + objectLinkField);
+        System.debug(LoggingLevel.INFO, DEBUG_INFO_PREFIX + '*** OBJ/LINK ' + objName + '/' + objectLinkField);
 
         Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
+        system.debug('fieldMap-->199-> '+fieldMap);
 
-        for (String fieldName : fields.deleteWhitespace().split(',')) {
+        for (String fieldName : fields.split(',')) {
+            String formulaField ;
             Schema.SObjectField fieldItem = fieldMap.get(fieldName);
             if (fieldItem == null) {
                 Schema.SObjectField fieldItem2 = fieldMap.get(fieldName + '__c'); // Allow for user to forget to add __c for custom fields
                 if (fieldItem2 == null) {
-                    throw new MyApexException(
+
+                    formulaField = fieldName;
+                    /*throw new MyApexException(
                         'Could not find the field: ' + fieldName + ' on the object ' + objName
-                    );
+                    );*/
                 } else {
                     fieldItem = fieldItem2;
                 }
             }
+                  
+            if(formulaField != null){  
+                System.debug('formulaField 222 : ' + formulaField);
+                // Add a synthetic formula field (not stored in Salesforce)
+                String customFieldName = formulaField.replaceAll('\\s+', '_') + '__f'; // must match what LWC or frontend expects
+                // String customFieldLabel = 'test field lable';
+                String customFieldLabel = formulaField;
+                String customFieldType = 'DECIMAL'; // or 'number', 'currency', 'boolean', etc.
+                Integer customFieldScale = 0;
+                Integer customFieldLength = 0;
+
+                datatableColumnFieldDescriptor +=
+                    ',{"label" : "' +
+                    customFieldLabel +
+                    '", "fieldName" : "' +
+                    customFieldName +
+                    '", "type" : "' +
+                    customFieldType +
+                    '", "scale" : "' +
+                    customFieldScale +
+                    '", "length" : "' +
+                    customFieldLength +
+                    '"}';
+
+                    system.debug('Formula field Part datatableColumnFieldDescriptor--> 241'+datatableColumnFieldDescriptor);
+                // Mark as read-only formula
+                noEditFields.add(customFieldName);
+                numberFields.add(customFieldName);
+            }else{
             Schema.DescribeFieldResult dfr = fieldItem.getDescribe();
+            System.debug(' Else dfr--> 247 '+ dfr);
+
             curFieldDescribes.add(dfr);
 
             datatableColumnFieldDescriptor =
@@ -224,7 +265,7 @@ public with sharing class ers_DatatableController {
                 dfr.getLength() +
                 '"}';
 
-            // if (!dfr.isUpdateable() || dfr.isCalculated()) noEditFields.add(fieldName);  // Check for Read Only and Formula fields
+                            // if (!dfr.isUpdateable() || dfr.isCalculated()) noEditFields.add(fieldName);  // Check for Read Only and Formula fields
             if (dfr.isCalculated()) {
                 noEditFields.add(fieldName);
             } // Check for Formula fields
@@ -283,6 +324,11 @@ public with sharing class ers_DatatableController {
                     System.debug(DEBUG_INFO_PREFIX + 'No field type match: ' + dfr.getType().name());
                 }
             }
+            }
+
+
+
+
         }
 
         // Process ALL fields to check for Datetime fields
@@ -545,6 +591,7 @@ public with sharing class ers_DatatableController {
             .getSObjectType();
         DescribeSObjectResult objDescribe = sobjType.getDescribe();
         Map<String, Schema.SObjectField> fieldMap = objDescribe.fields.getMap();
+        system.debug('fieldMap--> 550 '+fieldMap);
 
         for (String fieldName : fieldMap.keySet()) {
             SObjectField objField = fieldMap.get(fieldName);
@@ -581,6 +628,7 @@ public with sharing class ers_DatatableController {
             }
         }*/
 
+        system.debug('strResult--> 587 -> '+strResult);
         return strResult;
     }
 

@@ -8,8 +8,6 @@ export default class DualListBoxCpe extends LightningElement {
     _builderContext;
     _values;
 
-
-
     @track inputValues = {
         label: {value: null, valueDataType: null, isCollection: false, label: 'Master Label'},
         allOptionsStringFormat: {value: null, valueDataType: null, isCollection: false, label: 'Select datasource'},

@@ -20,23 +20,19 @@ export default class fsc_pickObjectAndField extends LightningElement {
     @api availableObjectTypes;
     @api availableFields;
     @api isAllowAll = false;    // Eric Smith 12/18/20 - Handle a Display All Objects override
-    @api DataTypeFilter;        // Andy Haas 01/03/23 - Depreciated
-    @api fieldTypeFilter;       // Andy Haas 01/03/23 - Added to match the field selection component
+    @api DataTypeFilter;
 
     @api disableObjectPicklist = false;
     @api hideObjectPicklist = false;
     @api hideFieldPicklist = false;
     @api displayFieldType = false;
-    @api testproperty;      // Christopher Strecker 09/25/2024 - This property does not do anything 
-                            // but it cannot be removed due to current managed package restrictions 
-                            // when using IsExposed is True
+    @api testproperty;
 
     @api allowFieldMultiselect = false;
 
     @api required = false;
 
     @track _objectType;
-    @track _fields;
     @track _field;
     @track objectTypes = standardObjectOptions;
     @track fields;
@@ -52,10 +48,6 @@ export default class fsc_pickObjectAndField extends LightningElement {
         dataTypeNotSupported: FieldTypeNotSuportedMessage
     };
 
-    get hasMasterLabel() {  // Fix artifact introduced by Christopher Strecker changes in v3.3.7
-        return this.masterLabel && this.masterLabel.length > 0;
-    }
-
     @api get objectType() {
         return this._objectType;
     }
@@ -68,17 +60,13 @@ export default class fsc_pickObjectAndField extends LightningElement {
         return this._field;
     }
 
-    get requiredSymbol() {
-        return this.required ? '*' : '';
-    }
-
     set field(value) {
         this._field = value;
         this.fieldDataType = getDataType(value);
     }
 
     connectedCallback() {
-        if(this.fieldTypeFilter && this.fieldTypeFilter.toLowerCase() !== this.picklistFieldTypeLabel.toLowerCase()) {
+        if(this.DataTypeFilter && this.DataTypeFilter.toLowerCase() !== this.picklistFieldTypeLabel.toLowerCase()) {
             this.errors.push(this.labels.dataTypeNotSupported);
         }
     }
@@ -107,36 +95,6 @@ console.log("🚀 ~ file: fsc_pickObjectAndField.js ~ line 75 ~ fsc_pickObjectAn
         } else if (data) {
             let fields = data.fields;
             let fieldResults = [];
-
-            // Christopher Strecker 06/06/2024 - Removed from for loop and updated to support multi select
-            if (this.fieldList && this.fieldList.length > 0) {
-
-                let foundFields = [];
-
-                let missingFields = [];
-
-                this.fieldList.forEach(fieldName => {
-
-                    if(fieldName && !isReference(fieldName) && !Object.prototype.hasOwnProperty.call(fields, fieldName)) {
-                        missingFields.push(fieldName)
-                    } else {
-                        foundFields.push(fieldName);
-                    }
-
-                });
-
-                if(foundFields && foundFields.length > 0) {
-                    this._field = foundFields.join(",");
-                } else {
-                    this._field = null;
-                }
-
-                if(missingFields && missingFields.length > 0) {
-                    this.errors.push(this.labels.fieldNotSupported + missingFields.join(","));
-                }
-                
-            }
-
             for (let field in this.fields = fields) {
                 if (Object.prototype.hasOwnProperty.call(fields, field)) {
                     if (this.isTypeSupported(fields[field]) && this.isFieldTypeSupported(fields[field])) {
@@ -152,10 +110,10 @@ console.log("🚀 ~ file: fsc_pickObjectAndField.js ~ line 75 ~ fsc_pickObjectAn
                         });
                     }
                 }
-                // if (this._field && !isReference(this._field) && !Object.prototype.hasOwnProperty.call(fields, this._field)) {
-                //     this.errors.push(this.labels.fieldNotSupported + this._field);
-                //     this._field = null;
-                // }
+                if (this._field && !isReference(this._field) && !Object.prototype.hasOwnProperty.call(fields, this._field)) {
+                    this.errors.push(this.labels.fieldNotSupported + this._field);
+                    this._field = null;
+                }
             }
             this.fields = fieldResults;
             if (this.fields) {
@@ -198,7 +156,7 @@ console.log("🚀 ~ file: fsc_pickObjectAndField.js ~ line 75 ~ fsc_pickObjectAn
         /*Sahib Gadzhiev3/32/2021 DataTypeFilter property can filled in FLow Screen for field type setting. 
         used toLowerCase to remove case sensitivity(Example: 'Picklist' = 'picklist')
         */  
-        if (!this.fieldTypeFilter || (!result && this.fieldTypeFilter.toLowerCase() === field.dataType.toLowerCase())) {
+        if (!this.DataTypeFilter || (!result && this.DataTypeFilter.toLowerCase() === field.dataType.toLowerCase())) {
             result = true;    
         }
         return result;
@@ -210,23 +168,6 @@ console.log("🚀 ~ file: fsc_pickObjectAndField.js ~ line 75 ~ fsc_pickObjectAn
         } else {
             return [];
         }
-    }
-
-    // Christopher Strecker 06/06/2024 - Added function to return this._field
-    //                                   as a list in order to support multi select input
-    get fieldList() {
-
-        if (this._field) {
-
-            if(this.allowFieldMultiselect) {
-                return this.splitValues(this._field);
-            } else {
-                return [this._field];
-            }
-            
-        } 
-
-        return [];
     }
 
     get isError() {

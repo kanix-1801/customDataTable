@@ -2,16 +2,13 @@ const flowComboboxDefaults = {
     stringDataType: 'String',
     referenceDataType: 'reference',
     defaultKeyPrefix: 'flowCombobox-',
-    defaultGlobalVariableKeyPrefix: 'flowCombobox-globalVariable-',
     recordLookupsType:'recordLookups',
     recordCreatesType:'recordCreates',
     recordUpdatesType:'recordUpdates',
     dataTypeSObject: 'SObject',
     isCollectionField: 'isCollection',
     actionType: 'actionCalls',
-    screenComponentType: 'screenComponent',
-    screenActionType: 'screenAction',
-    regionContainerName: 'Screen_Section',
+    screenComponentType: 'screenComponent'
 
 }
 

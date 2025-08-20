@@ -31,10 +31,6 @@
             <property name="selectedOptionsFieldDescriptorList" type="apex://usf3.FieldDescriptor[]"/>
             <property name="selectedOptionsCSV" type="String"/>
             <property name="selectedOptionsStringList" type="String[]"/>
-            <property name="a" type="Integer" role="inputOnly"/>
-
-           <property name="detailValue" label="Selected Record Ids" type="String[]" role="outputOnly"/>
-           <property name="myVar" label="myVar" type="String" role="outputOnly"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
